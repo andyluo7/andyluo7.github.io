@@ -1,0 +1,11 @@
+title: Andy Luo — Notes & Projects
+email: hello@andyluo.dev
+description: >-
+  Writing about software engineering, side projects, and lessons learned along the way.
+baseurl: ""
+url: "https://andyluo7.github.io"
+theme: minima
+plugins:
+  - jekyll-feed
+markdown: kramdown
+permalink: /:categories/:year/:month/:day/:title/
