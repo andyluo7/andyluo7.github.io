@@ -132,8 +132,9 @@ Run ComfyUI
 TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1 python main.py --use-pytorch-cross-attention
 ```
 
-You should see something like this, 
+You should see something like this,
 
+```
 Checkpoint files will always be loaded safely.
 Total VRAM 196592 MB, total RAM 2321759 MB
 pytorch version: 2.10.0.dev20251123+rocm7.1
@@ -143,6 +144,7 @@ pytorch version: 2.10.0.dev20251123+rocm7.1
 Starting server
 
 To see the GUI go to: http://127.0.0.1:8188
+```
 
 I used a remote MI300X server with IP address 64.139.222.215. To use ComfyUI in web browser on my macbook, I need to map it to the localhost by follows on 
 the terminal on my macbook, 
@@ -264,4 +266,3 @@ For optimized performance, we can use aiter backend, which includes Flash Attent
 We can also use multiple MI300X GPUs to reduce the latency for single request and increase the throughput for multiple batched requests.
 
 We can also use Radeon GPU or AIPC like Strix-Halo to build interesting applications with these powerful image and video generation models.   
-
