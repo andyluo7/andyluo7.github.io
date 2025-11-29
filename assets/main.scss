@@ -43,10 +43,9 @@
 }
 
 /* Reduce post title sizes on home and post pages */
-.home .post-list .post-link {
-  font-size: 70%;
-}
-
+.home .post-list .post-link,
 .post-title {
-  font-size: 70%;
+  font-size: 1rem;
+  font-weight: 400;
+  color: inherit;
 }
