@@ -41,3 +41,12 @@
   height: 100%;
   fill: currentColor;
 }
+
+/* Reduce post title sizes on home and post pages */
+.home .post-list .post-link {
+  font-size: 70%;
+}
+
+.post-title {
+  font-size: 70%;
+}
