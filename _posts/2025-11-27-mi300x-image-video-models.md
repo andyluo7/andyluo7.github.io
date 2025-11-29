@@ -14,7 +14,7 @@ I spent some time bringing a few trending open image and video genernation model
 The prerequsite is to have access to AMD MI300X GPU, which is available on various CSPs including [AMD Developer Cloud](https://devcloud.amd.com/) with free developer credit. 
 
 
-## 1) Base setup
+### 1) Base setup
 
 - OS: recent Ubuntu (22.04 or similar) with kernel that ships ROCm 6.x/7.x drivers.
 - GPU runtime: ROCm 6.x/7.x with `rocminfo` and `rocm-smi` working.
@@ -32,7 +32,7 @@ You will see one GPU listed if you are using single GPU snapshot from [AMD Devel
 
 Single MI300X GPU is sufficient enough to run all the 3 models. 
 
-## 2) Get Started
+### 2) Get Started
 
 Install uv if not installed yet
 
@@ -58,11 +58,11 @@ uv pip install -r requirements.txt
 ```
 
 
-## 3) FLUX.2-dev (image)
+### 3) FLUX.2-dev (image)
 
 There are 2 ways to run FLUX.2-dev, with diffusers or ComfyUI.
 
-### 3.1) diffusers 
+#### 3.1) diffusers 
 
 Minimal script (assumes HF auth token in `HF_TOKEN` if the model is gated):
 
@@ -115,7 +115,7 @@ The image will be generated in around 12 seconds. Here is my generated one,
 
 ![FLUX.2 sample output — hermit crab in a soda can on the beach](/assets/flux2_output.png)
 
-### 3.2) ComfyUI 
+#### 3.2) ComfyUI 
 
 Download model files and put them into right places in ComfyUI
 
@@ -178,7 +178,7 @@ It tooks around 15s to generate the 1024x1024 image in 20 steps shown as follows
 
 
 
-## 4) HunyuanVideo-1.5 (video)
+### 4) HunyuanVideo-1.5 (video)
 
 We will use ComfyUI to run Tencent's HunyuanVideo-1.5 video generation model, the same way we ran FLUX.2-dev as above. 
 
@@ -218,7 +218,7 @@ It will take more than 10 minutes to generate a 720p video with 5 second length,
 
 
 
-## 5) Z-Image-Turbo (image)
+### 5) Z-Image-Turbo (image)
 
 This model emphasizes speed with great quality. It can run with diffusers using following Python code, 
 
@@ -257,7 +257,7 @@ It runs blazingly fast and generates the image instantly. Here is the generated 
 
 
 
-## 6) Next step
+### 6) Next step
 
 This blog focuses on Out-of-the-Box experience of running these fresh new models on single AMD MI300X GPU. 
 
