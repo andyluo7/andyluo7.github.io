@@ -43,9 +43,14 @@
 }
 
 /* Reduce post title sizes on home and post pages */
-.home .post-list .post-link,
-.post-title {
+.home .post-list .post-link {
   font-size: 1rem;
   font-weight: 400;
+  color: inherit;
+}
+
+.post-title {
+  font-size: 1.5em; /* match section heading size */
+  font-weight: 600;
   color: inherit;
 }
