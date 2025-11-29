@@ -66,7 +66,7 @@ There are 2 ways to run FLUX.2-dev, with diffusers or ComfyUI.
 
 Minimal script (assumes HF auth token in `HF_TOKEN` if the model is gated):
 
-```bash
+```text
 python - <<'PY'
 import torch
 from diffusers import Flux2Pipeline
@@ -222,7 +222,7 @@ It will take more than 10 minutes to generate a 720p video with 5 second length,
 
 This model emphasizes speed with great quality. It can run with diffusers using following Python code, 
 
-```bash
+```text
 python - <<'PY'
 import torch
 from diffusers import ZImagePipeline
