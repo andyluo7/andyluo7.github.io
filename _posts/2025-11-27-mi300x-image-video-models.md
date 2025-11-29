@@ -156,9 +156,9 @@ Please also keep the terminal which runs the port mapping open while you use Com
 
 Next, launch web browser on your host computer and visit http://localhost:8188/. You should be able to see ComfyUI open and up. 
 
-Then go to https://comfyanonymous.github.io/ComfyUI_examples/flux2/#basic-example-workflow and drag the image to ComfyUI in the web browser to get the workflow. 
+Then go to [https://comfyanonymous.github.io/ComfyUI_examples/flux2/#basic-example-workflow](https://comfyanonymous.github.io/ComfyUI_examples/flux2/#basic-example-workflow) and drag the image to ComfyUI in the web browser to get the workflow.
 
-Download sunset.png and fennec_girl_sing.png from https://github.com/andyluo7/andyluo7.github.io/assets and put them into $HOME/ComfyUI/input
+Download `sunset.png` and `fennec_girl_sing.png` from [https://github.com/andyluo7/andyluo7.github.io/tree/main/assets](https://github.com/andyluo7/andyluo7.github.io/tree/main/assets) and put them into `$HOME/ComfyUI/input`.
 
 You can see the workflow in ComfyUI as follows, click the blue "Run" botton at the top right corner to generate the image.
 
@@ -264,5 +264,4 @@ For optimized performance, we can use aiter backend, which includes Flash Attent
 We can also use multiple MI300X GPUs to reduce the latency for single request and increase the throughput for multiple batched requests.
 
 We can also use Radeon GPU or AIPC like Strix-Halo to build interesting applications with these powerful image and video generation models.   
-
 
