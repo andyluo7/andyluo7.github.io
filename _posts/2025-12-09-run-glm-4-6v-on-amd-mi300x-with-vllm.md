@@ -193,7 +193,7 @@ The output:
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "\nThe list of cat breeds and their bounding box coordinates in the required JSON format is <|begin_of_box|>[<span style=\"color: red;\">{\"label\": \"American Shorthair-1\", \"bbox_2d\": [109, 152, 193, 822]}, {\"label\": \"American Shorthair-2\", \"bbox_2d\": [191, 331, 311, 852]}, {\"label\": \"American Shorthair-3\", \"bbox_2d\": [299, 347, 434, 899]}, {\"label\": \"Domestic Shorthair-1\", \"bbox_2d\": [422, 523, 516, 913]}, {\"label\": \"American Shorthair-4\", \"bbox_2d\": [505, 257, 609, 852]}, {\"label\": \"American Shorthair-5\", \"bbox_2d\": [606, 445, 710, 855]}, {\"label\": \"Maine Coon-1\", \"bbox_2d\": [696, 92, 819, 822]}, {\"label\": \"American Shorthair-6\", \"bbox_2d\": [808, 473, 886, 825]}</span>]<|end_of_box|>.",
+        "content": "\nThe list of cat breeds and their bounding box coordinates in the required JSON format is <|begin_of_box|>[{\"label\": \"American Shorthair-1\", \"bbox_2d\": [109, 152, 193, 822]}, {\"label\": \"American Shorthair-2\", \"bbox_2d\": [191, 331, 311, 852]}, {\"label\": \"American Shorthair-3\", \"bbox_2d\": [299, 347, 434, 899]}, {\"label\": \"Domestic Shorthair-1\", \"bbox_2d\": [422, 523, 516, 913]}, {\"label\": \"American Shorthair-4\", \"bbox_2d\": [505, 257, 609, 852]}, {\"label\": \"American Shorthair-5\", \"bbox_2d\": [606, 445, 710, 855]}, {\"label\": \"Maine Coon-1\", \"bbox_2d\": [696, 92, 819, 822]}, {\"label\": \"American Shorthair-6\", \"bbox_2d\": [808, 473, 886, 825]}]<|end_of_box|>.",
         "refusal": null,
         "annotations": null,
         "audio": null,
