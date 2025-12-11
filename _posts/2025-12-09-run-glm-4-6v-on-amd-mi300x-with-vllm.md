@@ -74,7 +74,7 @@ Once vLLM server is launched, here are two quick examples of demonstrating the c
 
 
 
-```bash
+```text
 curl -X POST \
     http://localhost:8000/v1/chat/completions \
     -H "Content-Type: application/json" \
@@ -151,7 +151,7 @@ You can see it can successfully identify the second bottle of beer from the righ
 
 ![Visual Grounding Example](https://cdn.bigmodel.cn/markdown/1765174983998image.png)
 
-```bash
+```text
 curl -X POST \
   http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
