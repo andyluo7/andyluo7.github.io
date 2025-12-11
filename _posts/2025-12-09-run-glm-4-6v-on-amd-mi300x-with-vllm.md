@@ -66,7 +66,7 @@ vllm serve zai-org/GLM-4.6V \
 You can also use --tensor-parallel-size 2 and 8 to run on 2 or 8 MI300X GPU. 
 The same command can be used to run zai-org/GLM-4.6V-FP8 on 1, 2, 4, 8 MI300X GPU.
 
-Here are two quick examples of demonstrating the capabilities of GLM-4.6V.
+Once vLLM server is launched, here are two quick examples of demonstrating the capabilities of GLM-4.6V.
 
 #### Example 1: Visual Grounding
 
@@ -105,7 +105,9 @@ curl -X POST \
 
 The output: 
 
+<pre>
 {"id":"chatcmpl-afb2ac2dce2bd986","object":"chat.completion","created":1765416718,"model":"zai-org/GLM-4.6V","choices":[{"index":0,"message":{"role":"assistant","content":"\nThe coordinates of the second bottle of beer from the right on the table are <|begin_of_box|>[[94,598,177,991]]<|end_of_box|>.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":"The image shows an outdoor table setting with various items on it, including bottles of beer. The question asks for the coordinates of the second bottle of beer from the right on the table. By visually inspecting the table, we identify the bottles of beer and count from the right - hand side to find the second one. Then, we determine the bounding box coordinates of that specific bottle.","reasoning_content":"The image shows an outdoor table setting with various items on it, including bottles of beer. The question asks for the coordinates of the second bottle of beer from the right on the table. By visually inspecting the table, we identify the bottles of beer and count from the right - hand side to find the second one. Then, we determine the bounding box coordinates of that specific bottle."},"logprobs":null,"finish_reason":"stop","stop_reason":151336,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":696,"total_tokens":807,"completion_tokens":111,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}
+</pre>
 
 You can see it can successfully identify the second bottle of beer from the right on the table and provide the coordinates [94,598,177,991]. It also shows the reasoning process in the "reasoning_content" field.
 
@@ -144,11 +146,13 @@ curl -X POST \
 
 The output: 
 
+<pre>
 {"id":"chatcmpl-ad870121ef1f16e5","object":"chat.completion","created":1765417439,"model":"zai-org/GLM-4.6V","choices":[{"index":0,"message":{"role":"assistant","content":"\nThe list of cat breeds and their bounding box coordinates in the required JSON format is <|begin_of_box|>[<span style=\"color: red;\">{\"label\": \"American Shorthair-1\", \"bbox_2d\": [109, 152, 193, 822]}, {\"label\": \"American Shorthair-2\", \"bbox_2d\": [191, 331, 311, 852]}, {\"label\": \"American Shorthair-3\", \"bbox_2d\": [299, 347, 434, 899]}, {\"label\": \"Domestic Shorthair-1\", \"bbox_2d\": [422, 523, 516, 913]}, {\"label\": \"American Shorthair-4\", \"bbox_2d\": [505, 257, 609, 852]}, {\"label\": \"American Shorthair-5\", \"bbox_2d\": [606, 445, 710, 855]}, {\"label\": \"Maine Coon-1\", \"bbox_2d\": [696, 92, 819, 822]}, {\"label\": \"American Shorthair-6\", \"bbox_2d\": [808, 473, 886, 825]}</span>]<|end_of_box|>.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":"The image shows a group of cats of various breeds and sizes standing against a white background. The task is to identify the breed of each cat and provide the bounding box coordinates in a specific JSON - format. To do this, I need to visually analyze each cat in the image, determine its breed based on physical characteristics such as fur pattern, color, and body shape, and then estimate the bounding box coordinates for each cat. I will go through each cat one by one, starting from the left - most cat and moving to the right, and create a dictionary for each with the 'label' key for the breed and 'bbox_2d' key for the coordinates.","reasoning_content":"The image shows a group of cats of various breeds and sizes standing against a white background. The task is to identify the breed of each cat and provide the bounding box coordinates in a specific JSON - format. To do this, I need to visually analyze each cat in the image, determine its breed based on physical characteristics such as fur pattern, color, and body shape, and then estimate the bounding box coordinates for each cat. I will go through each cat one by one, starting from the left - most cat and moving to the right, and create a dictionary for each with the 'label' key for the breed and 'bbox_2d' key for the coordinates."},"logprobs":null,"finish_reason":"stop","stop_reason":151336,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":635,"total_tokens":1058,"completion_tokens":423,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}
+</pre>
 
 You can see it can successfully identify the breeds of all cats in the image and provide the bounding box coordinates in the required JSON format.
 
-## 3. Summary and Call to Action
+## 3. Summary
 
 GLM-4.6V represents a significant leap forward in open multimodal AI, bringing native visual tool use and long-context understanding to the forefront. When paired with the high-bandwidth memory and compute power of AMD MI300X GPUs, it becomes a formidable tool for enterprise-grade multimodal applications.
 
