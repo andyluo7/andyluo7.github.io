@@ -467,7 +467,7 @@ python3 trace_replay_tester.py \
 - **SemiAnalysis** for open-sourcing [InferenceX](https://github.com/SemiAnalysisAI/InferenceX) — the multi-turn agentic benchmark framework
 - **callanjfox / WEKA** for the [kv-cache-tester](https://github.com/callanjfox/kv-cache-tester) toolkit and the 739 anonymized Claude Code traces
 - **LMCache team** for the connector and the source-friendly build system
-- **AMD** for the MI300X access and the ROCm vLLM container ecosystem
+- **Hotaisle** for MI300X access
 
 ---
 
