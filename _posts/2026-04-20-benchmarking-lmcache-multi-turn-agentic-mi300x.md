@@ -5,8 +5,6 @@ date: 2026-04-20
 categories: [benchmarks, rocm, inference]
 ---
 
-# Benchmarking LMCache for Multi-Turn Agentic Workloads on AMD MI300X
-
 *A practitioner's guide to KV-cache tiering on ROCm — what works, what doesn't, and the regime where it actually matters.*
 
 ---
