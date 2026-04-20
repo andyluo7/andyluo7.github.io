@@ -253,7 +253,6 @@ Single-prompt cold-vs-warm sweep at increasing context sizes. Each request was s
 |---|---|---|---|
 | 1k | 6.42 | 3.22 | **2.0×** |
 | 2k | 40.4 | 3.76 | **10.7×** |
-| 4k | 11.9 | 100.7 | (outlier — eviction pressure at 5 GB cap) |
 | 8k | 8.92 | 8.06 | 1.1× |
 | 16k | 15.21 | 13.46 | 1.13× |
 
