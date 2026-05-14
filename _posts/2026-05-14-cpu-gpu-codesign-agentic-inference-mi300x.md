@@ -335,14 +335,14 @@ However, GIL removal has risks:
 vLLM V1 already separates the EngineCore (scheduler) from the APIServer (HTTP handling) into different processes. This is effectively a GIL bypass:
 
 ```
-APIServer (Process 1)          EngineCore (Process 2)         Workers (Process 3+)
-├── HTTP parsing               ├── Scheduling                 ├── GPU prefill
-├── Tokenization               ├── Block allocation           ├── GPU decode  
-├── Request routing             ├── Cache management           ├── KV transfers
-└── SSE streaming              └── Preemption logic           └── Sampling
-         │                              │                           │
-         └──── IPC (shared memory) ─────┘                           │
-                                        └──── IPC (shared memory) ──┘
+APIServer (Process 1)     EngineCore (Process 2)     Workers (Process 3+)
+├── HTTP parsing          ├── Scheduling             ├── GPU prefill
+├── Tokenization          ├── Block allocation       ├── GPU decode
+├── Request routing       ├── Cache management       ├── KV transfers
+└── SSE streaming         └── Preemption logic       └── Sampling
+         │                         │                        │
+         └── IPC (shared mem) ─────┘                        │
+                                   └── IPC (shared mem) ────┘
 ```
 
 This architecture already eliminates most GIL contention. Our measurements show that vLLM 0.19.0 (which uses V1) achieves reasonable scaling — the 15% CPU overhead at conc=32 is *after* the multi-process split. Without it, we'd likely see 25–30%.
