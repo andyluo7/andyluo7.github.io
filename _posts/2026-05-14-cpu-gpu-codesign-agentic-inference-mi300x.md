@@ -297,6 +297,158 @@ For a concrete example: at conc32_100k with HBM prefix cache, total E2E is 25,95
 
 ---
 
+## 7. Open Questions & Future Directions
+
+### 7.1 Can We Eliminate the CPU Bottleneck? Rust, No-GIL, and Beyond
+
+Our data shows that **94% of CPU overhead is scheduling + queue wait**, not tokenization or serialization. This has direct implications for optimization strategies:
+
+**Rewriting the scheduler in Rust or C++:**
+
+The vLLM scheduler today is pure Python — prefix tree walks, block allocation, preemption logic, all running under the GIL. Rewriting the hot path in Rust (via PyO3) or C++ (via pybind11) could yield significant gains:
+
+| Component | Current (Python) | Estimated (Rust) | Speedup | Impact on E2E |
+|-----------|-----------------|-------------------|---------|---------------|
+| Prefix tree walk | O(n) per request, GIL-held | O(n) but no GIL, SIMD-friendly | 5–10× | 2–4% at conc=32 |
+| Block allocation | Dict lookups + list ops | Lock-free concurrent allocator | 10–20× | 1–2% at conc=32 |
+| Hash computation | Python `hash()` | Rust `xxhash` / `blake3` | 3–5× | <0.5% (already fast) |
+| Request batching | Python list sorting | Rust `rayon` parallel sort | 5–10× | 1–2% at conc=32 |
+
+Total estimated E2E improvement: **4–8% at conc=32** from a Rust scheduler rewrite. This is meaningful but not transformative — the real win is eliminating GIL contention, not raw speed.
+
+**Removing the Python GIL:**
+
+Python 3.13+ introduced experimental free-threaded mode (`--disable-gil`). For vLLM, this could be transformative:
+
+- Currently: tokenization, scheduling, HTTP handling, and detokenization all serialize through the GIL
+- Without GIL: these can truly parallelize across CPU cores
+- The `t_http_overhead` at conc=32 (1,130ms for 32K context) includes substantial GIL contention — multiple requests competing for the same Python thread
+- **Estimated impact: 20–40% reduction in `t_http_overhead` at high concurrency**, translating to 3–6% E2E improvement
+
+However, GIL removal has risks:
+- vLLM's internal data structures (block tables, prefix cache tree) would need thread-safe redesign
+- Many Python C extensions assume GIL protection
+- The `torch` runtime itself has GIL interactions during tensor operations
+
+**The pragmatic path — vLLM V1's multi-process architecture:**
+
+vLLM V1 already separates the EngineCore (scheduler) from the APIServer (HTTP handling) into different processes. This is effectively a GIL bypass:
+
+```
+APIServer (Process 1)          EngineCore (Process 2)         Workers (Process 3+)
+├── HTTP parsing               ├── Scheduling                 ├── GPU prefill
+├── Tokenization               ├── Block allocation           ├── GPU decode  
+├── Request routing             ├── Cache management           ├── KV transfers
+└── SSE streaming              └── Preemption logic           └── Sampling
+         │                              │                           │
+         └──── IPC (shared memory) ─────┘                           │
+                                        └──── IPC (shared memory) ──┘
+```
+
+This architecture already eliminates most GIL contention. Our measurements show that vLLM 0.19.0 (which uses V1) achieves reasonable scaling — the 15% CPU overhead at conc=32 is *after* the multi-process split. Without it, we'd likely see 25–30%.
+
+**Recommendation:** The highest-ROI optimization is **pipelining scheduling with GPU execution** — start scheduling the next batch while the current batch is still executing on GPU. This doesn't require any language change, just better overlap in the EngineCore.
+
+### 7.2 Sub-Agent Explosion: What Happens at 12× Concurrency?
+
+Modern agentic frameworks (Claude Code, OpenHands, SWE-Agent) routinely spawn sub-agents. A single user session might fork into 4–12 parallel sub-agents for tasks like:
+- Searching multiple codebases simultaneously
+- Running parallel tool calls (web search + file read + code execution)
+- Exploring multiple solution paths (tree-of-thought)
+
+**The math gets scary fast:**
+
+If 4 users each spawn 3 sub-agents, you have 4 × (1 + 3) = 16 effective concurrent sessions. If each spawns 12 sub-agents: 4 × (1 + 12) = **52 concurrent sessions.**
+
+Extrapolating from our data:
+
+| Users | Sub-agents/user | Effective Conc | Est. CPU% | Est. HTTP OH (32K) |
+|-------|----------------|----------------|-----------|--------------------|
+| 4 | 0 | 4 | 1.6% | 53 ms |
+| 4 | 3 | 16 | 6.2% | 555 ms |
+| 4 | 12 | 52 | **20–25%** | **~3,000 ms** |
+| 8 | 12 | 104 | **30–40%** | **~8,000+ ms** |
+
+At 52 effective concurrent requests, our superlinear scaling model predicts:
+- HTTP overhead would reach ~3,000ms (vs 1,130ms at conc=32) — that's 3 seconds of pure CPU wait before a single GPU kernel fires
+- CPU% of E2E could hit 20–25%, meaning **one quarter of your GPU investment is wasted on CPU scheduling**
+- The prefix cache tree would become deep and wide (52 diverse conversation prefixes), making tree walks even more expensive
+
+**Sub-agent-specific challenges:**
+
+1. **Prefix divergence:** Sub-agents share a common parent prefix but diverge quickly (different tool calls, different search results). This creates a bushy prefix tree that's expensive to walk but has high reuse potential — exactly the regime where LMCache's L2 tier pays off.
+
+2. **Bursty arrival patterns:** Sub-agents don't arrive at a steady rate — they burst (parent spawns 12 children simultaneously). The scheduler must absorb this burst, and queue wait time spikes.
+
+3. **Priority inversion:** The parent agent is blocked waiting for sub-agent results. If sub-agents are queued behind other users' requests, the parent's end-to-end latency multiplies.
+
+**Co-design implications:**
+
+- **Request routing becomes critical:** With 52+ concurrent sessions, a single vLLM instance may not be enough. Disaggregated serving (separate prefill and decode nodes) or multi-instance routing could reduce per-instance scheduling pressure.
+- **Sub-agent-aware scheduling:** A scheduler that understands parent-child relationships could prioritize sub-agents of the same parent to complete a "generation" faster, rather than round-robin across all requests.
+- **Shared prefix optimization:** Sub-agents from the same parent share ~80–90% of their prefix. A scheduler that detects this and batches sibling sub-agents together for prefill could dramatically reduce redundant computation.
+
+### 7.3 Hybrid Workloads: Database Queries, RAG, and Tool Execution
+
+Real agentic workloads don't just call the LLM — they interleave LLM inference with CPU/IO-bound operations:
+
+```
+ Turn 1: LLM generates SQL query          (GPU: 2-5s)
+ Turn 2: Execute SQL against database      (CPU/IO: 50-500ms)
+ Turn 3: LLM analyzes results              (GPU: 3-8s)
+ Turn 4: Retrieve documents from vector DB (CPU/IO: 20-200ms)
+ Turn 5: LLM synthesizes final answer      (GPU: 5-15s)
+```
+
+**The inter-turn gap is a new CPU cost we didn't measure:**
+
+Our benchmark focused on the *intra-request* CPU-GPU split (what happens inside a single LLM call). But agentic workloads have a second CPU cost: the **inter-turn gap** — the time between the LLM finishing one turn and the next turn's prompt being ready.
+
+This gap includes:
+
+| Operation | Typical Latency | Where |
+|-----------|----------------|-------|
+| Tool call parsing | 0.1–1 ms | Client CPU |
+| Database query (PostgreSQL) | 5–500 ms | External service |
+| Vector DB retrieval (FAISS/pgvector) | 10–200 ms | CPU + sometimes GPU |
+| Web API call (search, code execution) | 100–2,000 ms | Network + external |
+| Result formatting + context assembly | 1–10 ms | Client CPU |
+| Re-tokenization of updated context | 50–220 ms | Server CPU |
+
+**Performance implications:**
+
+1. **GPU idle time:** During tool execution, the GPU allocated to this user's session sits idle. At 100k context, the KV cache for one session holds ~12 GB of HBM. If tool execution takes 500ms, that's 500ms × 12 GB of stranded GPU memory that could serve other requests.
+
+2. **The KV cache cold-start problem:** If the scheduler evicts this session's KV blocks during tool execution (to serve other requests), the next turn must re-prefill the entire context. This is exactly the scenario where LMCache's CPU DRAM tier shines — it preserves KV state across tool-execution gaps at negligible cost.
+
+3. **CPU contention between tool execution and scheduling:** If tool execution (database queries, vector search) runs on the same CPU cores as the vLLM scheduler, it competes for CPU resources. At high concurrency + frequent tool calls, this could push CPU overhead well beyond the 15% we measured for pure LLM inference.
+
+**Estimated E2E impact of hybrid workloads:**
+
+| Workload Type | LLM Time | Tool Time | Inter-turn OH | GPU Idle % | Effective CPU% |
+|---------------|----------|-----------|--------------|-----------|----------------|
+| Pure chat | 100% | 0% | ~0% | ~0% | 10–15% |
+| Light tools (search) | 70% | 20% | 10% | 15–20% | 20–25% |
+| Heavy tools (DB + RAG) | 50% | 35% | 15% | 25–35% | 25–35% |
+| Code execution agents | 40% | 45% | 15% | 35–45% | 30–40% |
+
+For code execution agents (the Claude Code use case our traces come from), **CPU and IO operations may consume 40–50% of wall-clock time**, with GPU active only 50–60% of the time. This fundamentally changes the co-design equation:
+
+- **For pure LLM serving:** Buy the best GPU, CPU barely matters
+- **For agentic serving:** CPU, memory bandwidth, and IO become co-equal with GPU. System balance matters more than peak GPU FLOPS.
+
+**Optimization strategies for hybrid workloads:**
+
+1. **Speculative prefetching:** While the LLM generates a tool call, pre-warm likely next-turn prefixes based on the tool type. For example, if the model calls `search()`, pre-tokenize a template like `"Search results: {placeholder}"` to have partial KV cache ready.
+
+2. **KV cache reservation:** Reserve a "parking" slot in CPU DRAM for active sessions during tool execution, preventing eviction. LMCache already enables this — the question is whether to make it tool-call-aware.
+
+3. **Separate CPU pools:** Dedicate specific CPU cores to vLLM scheduling and others to tool execution. NUMA-aware pinning becomes critical: vLLM scheduler threads on cores near the GPU, tool execution threads on cores near the NIC (for database queries) or NVMe (for document retrieval).
+
+4. **Async tool execution with GPU overlap:** Execute tool calls concurrently with other users' LLM inference, then "re-inject" the results when ready. This requires the scheduler to support interruptible sessions — start other requests during the tool gap, then preempt them when the tool-calling session is ready to continue.
+
+---
+
 ## Appendix: Reproduction
 
 ### Environment
