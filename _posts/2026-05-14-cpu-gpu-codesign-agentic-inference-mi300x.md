@@ -491,7 +491,7 @@ vllm serve /work/models/MiniMax-M2.5 \
 
 ### Benchmark Scripts
 
-All scripts and raw data are available in the [`cpu-gpu-codesign/`](https://github.com/andyluo7/openclaw-workspace/tree/main/multiturn-agentic-bench/cpu-gpu-codesign) directory.
+All scripts and raw data are available at [github.com/andyluo7/cpu-gpu-codesign-agentic-inference](https://github.com/andyluo7/cpu-gpu-codesign-agentic-inference).
 
 ---
 
