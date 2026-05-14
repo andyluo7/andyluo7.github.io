@@ -36,24 +36,24 @@ Client                          Server (vLLM)                      GPU
 ──────                          ─────────────                      ───
  │                                    │                              │
  │─── serialize request ──────────────│                              │
- │    (JSON, 0.04-1.3ms)             │                              │
+ │    (JSON, 0.04-1.3ms)              │                              │
  │                                    │                              │
- │                          ┌─────────┴──────────┐                  │
- │                          │ HTTP parse          │                  │
- │                          │ Tokenize input      │                  │
- │                          │ Schedule request    │  "HTTP Overhead" │
- │                          │ KV cache lookup     │  (7-3900ms)      │
- │                          │ Queue wait          │                  │
- │                          └─────────┬──────────┘                  │
+ │                          ┌─────────┴──────────┐                   │
+ │                          │ HTTP parse         │                   │
+ │                          │ Tokenize input     │                   │
+ │                          │ Schedule request   │  "HTTP Overhead"  │
+ │                          │ KV cache lookup    │  (7-3900ms)       │
+ │                          │ Queue wait         │                   │
+ │                          └─────────┬──────────┘                   │
  │                                    │                              │
- │                                    │──── GPU prefill ────────────│
- │                                    │     (41-28537ms)            │
+ │                                    │──── GPU prefill ─────────────│
+ │                                    │     (41-28537ms)             │
  │                                    │                              │
- │                                    │──── GPU decode (streaming) ─│
- │                                    │     (1780-20792ms)          │
+ │                                    │──── GPU decode (streaming) ──│
+ │                                    │     (1780-20792ms)           │
  │                                    │                              │
- │◄── parse SSE response ────────────│                              │
- │    (1.9µs per chunk)              │                              │
+ │◄── parse SSE response ─────────────│                              │
+ │    (1.9µs per chunk)               │                              │
 ```
 
 The question: at scale (32 concurrent users, 100k token contexts), does the CPU pipeline become a bottleneck?
